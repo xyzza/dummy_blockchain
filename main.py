@@ -14,7 +14,7 @@ TIME_FORMAT = '%Y:%m:%d:%H:%M:%s:%f'
 
 class Block:
 
-    def __init__(self, index, data, timestamp, prev_hash):
+    def __init__(self, index, data, timestamp, prev_hash, _hash=None):
 
         self._index = index
 
@@ -24,7 +24,7 @@ class Block:
 
         self._prev_hash = prev_hash
 
-        self._hash = self._get_hash()
+        self._hash = self._get_hash() if _hash is None else _hash
 
     @property
     def hash(self):
@@ -77,7 +77,8 @@ for item in db.view('block/block_view'):
             int(item.key), 
             document['data'], 
             document['timestamp'], 
-            document['prev_hash']
+            document['prev_hash'],
+            _hash=document['hash'],
         )
     )
 
@@ -121,6 +122,10 @@ for index in range(_chain_length, _chain_length+3):
 _prev_block = blocks[0]
 # проверка целостности блокчейна:
 for block in blocks[1:]:
+
+    if block._get_hash() != block.hash:
+        print(block)
+        print('Block is corrupted!')
 
     _hash = _prev_block._get_hash()
 
